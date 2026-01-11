@@ -1,0 +1,13 @@
+# Data lake (local / S3 mirror)
+data_lake/
+
+# Logs
+logs/
+*.log
+
+# Python
+__pycache__/
+.venv/
+.env
+
+tests/
