@@ -32,6 +32,13 @@ class ValidationError(Exception):
 load_dotenv()
 
 #-------------------------------------
+# Config Path
+#-------------------------------------
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+config_path = (PROJECT_ROOT / "config" / "domains" / "sp500_current" / "latest.json")
+
+#-------------------------------------
 #API Details
 #-------------------------------------
 
@@ -39,12 +46,13 @@ api_key = os.getenv("EOD_APIKEY")
 if not api_key:
     raise ConfigError("API key not set in environment")
 
-#-------------------------------------
-#Paths
-#-------------------------------------
+s3_bucket = os.getenv("S3_RAW_BUCKET")
+if not s3_bucket:
+    raise ConfigError("S3 Bucket not set")
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DATA_LAKE = PROJECT_ROOT / "data_lake"
+aws_region = os.getenv("AWS_REGION")
+
+client = boto3.client("s3")
 
 # -------------------------------------
 # Fetch historical data
@@ -77,8 +85,11 @@ def fetch_historical(symbol: str) -> list[dict]:
     
     return data
 
+# -------------------------------------
+# Write historical data to S3
+# -------------------------------------
 
-def write_historical(symbol: str, api_response: list[dict], base_path: Path, domain:str="sp500", source: str="https://eodhd.com/api/eod/"):
+def write_historical(symbol: str, api_response: list[dict], domain:str="sp500", source: str="https://eodhd.com/api/eod/"):
 
     """
     Docstring for write_historical
@@ -95,12 +106,7 @@ def write_historical(symbol: str, api_response: list[dict], base_path: Path, dom
     :type source: str
     """
 
-    output_dir = (base_path/"raw"/"stocks"/"daily"/"historical"/domain/symbol)
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    output_file = output_dir / "eod_history.json"
-    temp_file = output_dir / "eod_history.tmp"
+    key = (f"raw/stocks/daily/historical/domain={domain}/symbol={symbol}/eod_history.json")
 
     payload = {
         "symbol": symbol,
@@ -111,16 +117,16 @@ def write_historical(symbol: str, api_response: list[dict], base_path: Path, dom
         "data": api_response
     }
 
-    with temp_file.open("w", encoding="utf-8") as f:
-        json.dump(payload, f, indent=2)
+    client.put_object(
+        Bucket=s3_bucket,
+        Key=key,
+        Body=json.dumps(payload, indent=2),
+        ContentType="application/json"
+    )
 
-    temp_file.replace(output_file)
-
-    print(f"historical data written to {output_file} for {symbol}")
+    print(f"[OK] historical data written to s3://{s3_bucket}/{key}")
 
 def get_historical_data():
-
-    config_path = (PROJECT_ROOT / "config" / "domains" / "sp500_current" / "latest.json")
 
     try:
         with config_path.open("r", encoding="utf-8") as f:
@@ -130,12 +136,11 @@ def get_historical_data():
     except Exception as e:
         raise ConfigError(f"Failed to load symbol config: {e}") from e
 
-
     for symbol in symbol_list:
 
         try: 
             data = fetch_historical(symbol)
-            write_historical(symbol, data, base_path=DATA_LAKE)
+            write_historical(symbol, data)
 
         except (APIError, ValidationError) as e:
             print(f"[WARN] {symbol} skipped: {e}")
