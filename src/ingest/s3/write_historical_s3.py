@@ -35,7 +35,7 @@ load_dotenv()
 # Config Path
 #-------------------------------------
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 config_path = (PROJECT_ROOT / "config" / "domains" / "sp500_current" / "latest.json")
 
 #-------------------------------------
@@ -52,7 +52,7 @@ if not s3_bucket:
 
 aws_region = os.getenv("AWS_REGION")
 
-client = boto3.client("s3")
+client = boto3.client("s3", aws_region)
 
 # -------------------------------------
 # Fetch historical data
