@@ -6,7 +6,7 @@ Write payloads to S3 bucket
 import json
 from datetime import timezone, datetime
 from src.extract.eod_client import fetch_historical
-from src.utils.custom_exceptions import ValidationError, APIError
+from src.utils.custom_exceptions import *
 from src.utils.get_sp500_tickers import get_symbols
 from src.load_raw.s3config import s3_bucket, client
 
