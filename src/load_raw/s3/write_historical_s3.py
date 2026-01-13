@@ -3,87 +3,12 @@ Connect to EODHD API and retrieve historical data
 Write payloads to S3 bucket
 
 """
-
-import os
-import requests
 import json
-import boto3
-from dotenv import load_dotenv
-from pathlib import Path
+from extract.eod_client import fetch_historical
 from datetime import timezone, datetime
-
-# -------------------------------------
-# Custom Exceptions
-# -------------------------------------
-
-class ConfigError(Exception):
-    pass
-
-class APIError(Exception):
-    pass
-
-class ValidationError(Exception):
-    pass
-
-#-------------------------------------
-# Load environment variables
-#-------------------------------------
-
-load_dotenv()
-
-#-------------------------------------
-# Config Path
-#-------------------------------------
-
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
-config_path = (PROJECT_ROOT / "config" / "domains" / "sp500_current" / "latest.json")
-
-#-------------------------------------
-#API Details
-#-------------------------------------
-
-api_key = os.getenv("EOD_APIKEY")
-if not api_key:
-    raise ConfigError("API key not set in environment")
-
-s3_bucket = os.getenv("S3_RAW_BUCKET")
-if not s3_bucket:
-    raise ConfigError("S3 Bucket not set")
-
-aws_region = os.getenv("AWS_REGION")
-
-client = boto3.client("s3", aws_region)
-
-# -------------------------------------
-# Fetch historical data
-# -------------------------------------
-
-def fetch_historical(symbol: str) -> list[dict]:
-
-    url = f"https://eodhd.com/api/eod/{symbol}.US"
-    params = {
-        "api_token": api_key,
-        "fmt": "json"
-    }
-
-    try:
-        response = requests.get(url, params=params, timeout=15)
-        response.raise_for_status()
-        data = response.json()
-
-    except requests.exceptions.RequestException as e:
-        raise APIError(f"HTTP error for {symbol}: {e}") from e
-    
-    except ValueError as e:
-        raise APIError(f"Invalid json returned for {symbol}") from e
-    
-    if not isinstance(data, list):
-        raise ValidationError(f"Unexpected payload structure for {symbol}")
-    
-    if not data:
-        raise ValidationError(f"No data returned for {symbol}")
-    
-    return data
+from utils.custom_exceptions import ConfigError, ValidationError, APIError
+from utils.get_sp500_tickers import get_symbols
+from s3config import s3_bucket, client
 
 # -------------------------------------
 # Write historical data to S3
@@ -128,15 +53,9 @@ def write_historical(symbol: str, api_response: list[dict], domain:str="sp500", 
 
 def get_historical_data():
 
-    try:
-        with config_path.open("r", encoding="utf-8") as f:
-            payload = json.load(f)
-            symbol_list = payload["symbols"]
+    symbols = get_symbols()
 
-    except Exception as e:
-        raise ConfigError(f"Failed to load symbol config: {e}") from e
-
-    for symbol in symbol_list:
+    for symbol in symbols:
 
         try: 
             data = fetch_historical(symbol)
