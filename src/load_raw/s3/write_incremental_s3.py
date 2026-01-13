@@ -5,7 +5,7 @@ Write payloads to S3 bucket
 import json
 from datetime import datetime, timezone, timedelta
 from src.extract import eod_client
-from src.load_raw import s3config as s3
+from src.utils import s3config as s3
 from src.utils import get_sp500_tickers as get_ticker
 
 # -------------------------------------

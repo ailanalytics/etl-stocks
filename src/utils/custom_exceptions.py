@@ -10,3 +10,6 @@ class APIError(Exception):
 
 class ValidationError(Exception):
     pass
+
+class StagingError(Exception):
+    pass

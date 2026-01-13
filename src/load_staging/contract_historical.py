@@ -16,8 +16,7 @@ required_fields = [
     "domain",
     "source",
     "ingestion_type",
-    "ingested_at",
-    "data"
+    "ingested_at"
 ] 
 
 required_data = [

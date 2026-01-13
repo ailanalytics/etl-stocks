@@ -8,7 +8,7 @@ from datetime import timezone, datetime
 from src.extract.eod_client import fetch_historical
 from src.utils.custom_exceptions import *
 from src.utils.get_sp500_tickers import get_symbols
-from src.load_raw.s3config import s3_bucket, client
+from src.utils.s3config import s3_bucket, client
 
 # -------------------------------------
 # Write historical data to S3
