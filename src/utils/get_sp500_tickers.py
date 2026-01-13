@@ -1,12 +1,12 @@
 import json
 from pathlib import Path
-from utils.custom_exceptions import ConfigError
+from src.utils.custom_exceptions import ConfigError
 
 # -------------------------------------
 # Config Path
 # -------------------------------------
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 config_path = PROJECT_ROOT / "config" / "domains" / "sp500_current" / "latest.json"
 
 def get_symbols() -> list[str]:

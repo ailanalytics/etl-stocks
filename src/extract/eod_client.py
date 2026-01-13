@@ -5,7 +5,7 @@ API client for EODHD
 import os
 import requests
 from dotenv import load_dotenv
-from utils.custom_exceptions import ConfigError, ValidationError, APIError
+from src.utils.custom_exceptions import *
 
 # -------------------------------------
 # Load environment variables

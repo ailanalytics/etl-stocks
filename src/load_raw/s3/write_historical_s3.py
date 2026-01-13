@@ -4,11 +4,11 @@ Write payloads to S3 bucket
 
 """
 import json
-from extract.eod_client import fetch_historical
 from datetime import timezone, datetime
-from utils.custom_exceptions import ConfigError, ValidationError, APIError
-from utils.get_sp500_tickers import get_symbols
-from s3config import s3_bucket, client
+from src.extract.eod_client import fetch_historical
+from src.utils.custom_exceptions import ValidationError, APIError
+from src.utils.get_sp500_tickers import get_symbols
+from src.load_raw.s3config import s3_bucket, client
 
 # -------------------------------------
 # Write historical data to S3

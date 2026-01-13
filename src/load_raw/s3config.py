@@ -1,6 +1,6 @@
 import os
 import boto3
-from utils.custom_exceptions import ConfigError
+from src.utils.custom_exceptions import *
 
 # -------------------------------------
 # AWS config

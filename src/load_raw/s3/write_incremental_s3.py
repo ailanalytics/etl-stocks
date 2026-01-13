@@ -3,10 +3,10 @@ Connect to EODHD API and retrieve incremental data
 Write payloads to S3 bucket
 """
 import json
-from extract.eod_client import fetch_incremental
 from datetime import datetime, timezone, timedelta
-from s3config import s3_key_exists, s3_bucket, client
-from utils.get_sp500_tickers import get_symbols
+from src.extract import eod_client
+from src.load_raw import s3config as s3
+from src.utils import get_sp500_tickers as get_ticker
 
 # -------------------------------------
 # Write incremental data to S3
@@ -28,7 +28,7 @@ def write_incremental(
         f"eod_incremental.json"
     )
 
-    if s3_key_exists(s3_bucket, key):
+    if s3.s3_key_exists(s3.s3_bucket, key):
         print(f"[SKIP] Incremental data already exists for {eod_date}")
         return
 
@@ -41,14 +41,14 @@ def write_incremental(
         "data": api_response
     }
 
-    client.put_object(
-        Bucket=s3_bucket,
+    s3.client.put_object(
+        Bucket=s3.s3_bucket,
         Key=key,
         Body=json.dumps(payload, indent=2),
         ContentType="application/json"
     )
 
-    print(f"[OK] {len(api_response)} records written to s3://{s3_bucket}/{key}")
+    print(f"[OK] {len(api_response)} records written to s3://{s3.s3_bucket}/{key}")
 
 # -------------------------------------
 # Orchestration
@@ -56,9 +56,9 @@ def write_incremental(
 
 def get_incremental_data():
     
-    symbols = get_symbols()
+    symbols = get_ticker.get_symbols()
 
-    data = fetch_incremental(symbols)
+    data = eod_client.fetch_incremental(symbols)
     write_incremental(data)
 
 # -------------------------------------
