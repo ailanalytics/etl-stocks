@@ -4,6 +4,7 @@ Extract and load EOD incremental from s3 raw to staging
 
 import json
 import sys
+from datetime import datetime, timedelta, timezone
 from src.utils.s3config import s3_bucket, client
 from src.load_staging.contract_incremental import validate_incremental_data
 from src.utils.db import execute
@@ -49,9 +50,11 @@ INSERT INTO staging.stocks (
 # Load EOD Incremental into staging
 # --------------------------------------------------
 
-def load_staging_incremental(date: str):
+def load_staging_incremental():
 
-    key = (f"raw/stocks/daily/incremental/domain=sp500/date={date}/eod_incremental.json")
+    eod_date = datetime.now(timezone.utc).date() - timedelta(days=1)
+
+    key = (f"raw/stocks/daily/incremental/domain=sp500/date={eod_date.isoformat()}/eod_incremental.json")
     request = client.get_object(
         Bucket=s3_bucket,
         Key=key
@@ -71,6 +74,8 @@ def load_staging_incremental(date: str):
             grain = validate_incremental_data(meta, candle)
 
             execute(INSERT, grain)
+
+            print(f"[INSERTED] candle for: {candle["code"]}")
 
             # sys.exit()
 
