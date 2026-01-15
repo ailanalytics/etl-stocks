@@ -42,7 +42,8 @@ INSERT INTO staging.stocks (
     %(close)s,
     %(adjusted_close)s,
     %(volume)s
-);
+)
+ON CONFLICT (symbol, trade_date) DO NOTHING;
 
 """
 

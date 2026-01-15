@@ -25,4 +25,8 @@ CREATE TABLE IF NOT EXISTS staging.stocks (
     close           NUMERIC(12,4) NOT NULL,
     adjusted_close  NUMERIC(12,4) NOT NULL,
     volume          BIGINT NOT NULL
+
+    CONSTRAINT staging_stocks_symbol_trade_date_uk
+        UNIQUE (symbol, trade_date)
+
 );
