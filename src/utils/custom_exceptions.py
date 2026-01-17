@@ -13,3 +13,9 @@ class ValidationError(Exception):
 
 class StagingError(Exception):
     pass
+
+class RequestError(Exception):
+    pass
+
+class ParsingError(Exception):
+    pass
