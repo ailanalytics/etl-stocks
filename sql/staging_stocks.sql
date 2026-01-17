@@ -9,7 +9,7 @@
 CREATE SCHEMA IF NOT EXISTS staging;
 
 -- -----------------------
--- Staging Table
+-- Staging Table - Price
 -- -----------------------
 
 CREATE TABLE IF NOT EXISTS staging.stocks (

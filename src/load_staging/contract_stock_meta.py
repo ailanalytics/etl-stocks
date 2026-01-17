@@ -3,9 +3,6 @@ Contract for validating stock meta data json payload
 Ensuring fields are present and casting types
 """
 
-from datetime import datetime, timezone, date
-from decimal import ROUND_HALF_UP, Decimal #For converting timestamp
-from src.utils.custom_exceptions import *
 from src.utils.string_tools import *
 
 # --------------------------------------------------
@@ -52,5 +49,6 @@ def validate_symbol_metadata(payload: dict, data: dict) -> dict:
         "sub_industry": sub_industry,
         "cik": cik,
         "domain": payload["domain"],
-        "source": payload["source"]
+        "source": payload["source"],
+        "ingested_at": payload["ingested_at"]
     }
