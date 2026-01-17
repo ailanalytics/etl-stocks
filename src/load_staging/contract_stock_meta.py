@@ -20,7 +20,7 @@ required_data = [
     "name",
     "sector",
     "sub_industry",
-    "cik"
+    "CIK"
 ]
 
 # --------------------------------------------------

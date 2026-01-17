@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS staging.stocks_meta (
     cik             NUMERIC NOT NULL,
     domain          TEXT NOT NULL,
     source          TEXT NOT NULL,
-    ingested_at     TIMESTAMPTZ NOT NULL
+    ingested_at     TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT staging_stocks_meta_symbol_cik
         UNIQUE (symbol, cik)

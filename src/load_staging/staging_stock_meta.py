@@ -1,12 +1,10 @@
 """
-Extract and load EOD historical from s3 raw to staging
+Extract and load stock meta data from s3 raw to staging
 """
 
 import json
-import sys
 from src.utils.s3config import s3_bucket, client
-from src.utils.get_sp500_tickers import get_symbols
-from src.load_staging.contract_historical import validate_historical_data
+from src.load_staging.contract_stock_meta import validate_symbol_metadata
 from src.utils.db import execute
 from src.utils.custom_exceptions import *
 
@@ -16,75 +14,65 @@ from src.utils.custom_exceptions import *
 
 INSERT = """
 
-INSERT INTO staging.stocks (
+INSERT INTO staging.stocks_meta (
     symbol,
+    name,
+    sector,
+    sub_industry,
+    cik,
     domain,
     source,
-    ingestion_type,
-    ingested_at,
-    trade_date,
-    open,
-    high,
-    low,
-    close,
-    adjusted_close,
-    volume
+    ingested_at
 ) VALUES (
     %(symbol)s,
+    %(name)s,
+    %(sector)s,
+    %(sub_industry)s,
+    %(cik)s,
     %(domain)s,
     %(source)s,
-    %(ingestion_type)s,
-    %(ingested_at)s,
-    %(trade_date)s,
-    %(open)s,
-    %(high)s,
-    %(low)s,
-    %(close)s,
-    %(adjusted_close)s,
-    %(volume)s
+    %(ingested_at)s
 )
-ON CONFLICT (symbol, trade_date) DO NOTHING;
+ON CONFLICT (symbol, cik) DO NOTHING;
 
 """
 
 # --------------------------------------------------
-# Load EOD Historical into staging
+# Load stock meta into staging
 # --------------------------------------------------
 
-def load_staging_historical():
+def load_stock_meta():
 
-    symbols = get_symbols()
+    key = (f"raw/stocks/stock_lists/domain=sp500/stock_list_2026-01-17.json")
 
-    for symbol in symbols:
-        key = (f"raw/stocks/daily/historical/domain=sp500/symbol={symbol}/eod_history.json")
-        request = client.get_object(
-            Bucket=s3_bucket,
-            Key=key
-        )
+    request = client.get_object(
+        Bucket=s3_bucket,
+        Key=key
+    )
 
-        raw = request["Body"].read()
-    
-        payload = json.loads(raw)
+    raw = request["Body"].read()
 
-        data = payload["data"] 
+    payload = json.loads(raw)
 
-        meta = {k: v for k, v in payload.items() if k != "data"}
+    data = payload["data"] 
 
-        for candle in data:
+    meta = {k: v for k, v in payload.items() if k != "data"}
 
-            try:
-                grain = validate_historical_data(meta, candle)
+    for stock in data:
 
-                execute(INSERT, grain)
+        try:
+            grain = validate_symbol_metadata(meta, stock)
 
-                # sys.exit()
+            execute(INSERT, grain)
 
-            except StagingError as e:
-                print(f"[REJECTED] candle: {candle}: {e}")
+        except StagingError as e:
+            print(f"[REJECTED] stock: {stock["symbol"]}: {e}")
+
+    print(f"[OK] Stocks inserted into staging.stocks_meta")
 
 # --------------------------------------------------
 # Entrypoint
 # --------------------------------------------------
 
 if __name__ == "__main__":
-    load_staging_historical()
+    load_stock_meta()
