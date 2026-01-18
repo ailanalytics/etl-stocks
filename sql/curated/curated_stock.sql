@@ -35,9 +35,9 @@ CREATE TABLE IF NOT EXISTS curated.dim_trade_date (
     day_of_week     INTEGER NOT NULL, -- 1: Mon, 7: Sun
     created_at      TIMESTAMPTZ DEFAULT now(),
 
-    CONSTRAINT dim_trade_date
+    CONSTRAINT dim_trade_date_constraint
     UNIQUE (date)
-)
+);
 
 -- =========================================================
 -- Fact Table
@@ -56,17 +56,17 @@ CREATE TABLE IF NOT EXISTS curated.fact_stock_prices (
 
     CONSTRAINT fact_stock_grain
     UNIQUE (symbol_sk, trade_date_sk)
-)
+);
 
 -- =========================================================
 -- Index
 -- =========================================================
 
-CREATE INDEX index_fact_stock_symbol
+CREATE INDEX IF NOT EXISTS index_fact_stock_symbol
 ON curated.fact_stock_prices (symbol_sk);
 
-CREATE INDEX index_fact_stock_trade_date
+CREATE INDEX IF NOT EXISTS index_fact_stock_trade_date
 ON curated.fact_stock_prices (trade_date_sk);
 
-CREATE INDEX index_fact_stock_price_trade_date
+CREATE INDEX IF NOT EXISTS index_fact_stock_price_trade_date
 ON curated.fact_stock_prices (symbol_sk, trade_date_sk);
