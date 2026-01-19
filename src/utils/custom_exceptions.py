@@ -11,7 +11,7 @@ class APIError(Exception):
 class ValidationError(Exception):
     pass
 
-class StagingError(Exception):
+class SQLError(Exception):
     pass
 
 class RequestError(Exception):

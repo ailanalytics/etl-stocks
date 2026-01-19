@@ -80,7 +80,7 @@ def load_staging_incremental():
 
             # sys.exit()
 
-        except StagingError as e:
+        except SQLError as e:
             print(f"[REJECTED] candle: {candle}: {e}")
 
 # --------------------------------------------------

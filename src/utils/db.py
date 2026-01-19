@@ -49,3 +49,18 @@ def fetch_all(query, params=None):
         with conn.cursor() as cur:
             cur.execute(query, params)
             return cur.fetchall()
+        
+# --------------------------------------------------
+# Execute query INSERT/UPDATE/DELETE and return rowcount
+# --------------------------------------------------
+
+def execute_with_rowcount(query, params=None):
+    """
+    Execute a query and return number of affected rows.
+    """
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(query, params)
+            rowcount = cur.rowcount
+        conn.commit()
+    return rowcount
