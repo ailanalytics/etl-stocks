@@ -10,14 +10,14 @@ from src.utils.custom_exceptions import *
 from src.utils.get_sp500_tickers import get_symbols
 from src.utils.s3config import s3_bucket, client
 
-# -------------------------------------
+# --------------------------------------------------
 # Write historical data to S3
-# -------------------------------------
+# --------------------------------------------------
 
 def write_historical(symbol: str, api_response: list[dict], domain:str="sp500", source: str="https://eodhd.com/api/eod/"):
 
     """
-    Docstring for write_historical
+    Write raw historical data to S3
     
     :param symbol: selected stock symbol
     :type symbol: str
@@ -50,6 +50,10 @@ def write_historical(symbol: str, api_response: list[dict], domain:str="sp500", 
     )
 
     print(f"[OK] historical data written to s3://{s3_bucket}/{key}")
+
+# --------------------------------------------------
+# Fetch symbols and call write_historical
+# --------------------------------------------------
 
 def get_historical_data():
 

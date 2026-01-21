@@ -9,7 +9,6 @@ from src.utils.custom_exceptions import *
 # SQL
 # --------------------------------------------------
 
-
 INSERT = """
 INSERT INTO curated.fact_stock_prices (
     symbol_sk,
@@ -46,7 +45,6 @@ WHERE sp.trade_date >
 
 ON CONFLICT ON CONSTRAINT fact_stock_grain DO NOTHING
 RETURNING 1;
-
 """
 
 # --------------------------------------------------
@@ -54,6 +52,11 @@ RETURNING 1;
 # --------------------------------------------------
 
 def load_curated_incremental():
+
+    """
+    Execute SQL to extract incrimental data from staging
+    and load into curated
+    """
 
     try:
 
@@ -65,15 +68,12 @@ def load_curated_incremental():
 
         raise RuntimeError(f"[REJECTED] curated incremental load: {e}")
     
-
 # --------------------------------------------------
 # Entry point
 # --------------------------------------------------
 
 def main():
-
     load_curated_incremental()
-
 
 if __name__ == "__main__":
     main()

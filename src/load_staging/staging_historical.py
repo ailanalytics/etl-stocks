@@ -53,6 +53,10 @@ ON CONFLICT (symbol, trade_date) DO NOTHING;
 
 def load_staging_historical():
 
+    """
+    Inserts EOD historical staging data into db
+    """
+
     symbols = get_symbols()
 
     for symbol in symbols:
@@ -71,20 +75,20 @@ def load_staging_historical():
         meta = {k: v for k, v in payload.items() if k != "data"}
 
         for candle in data:
-
             try:
                 grain = validate_historical_data(meta, candle)
 
                 execute(INSERT, grain)
 
-                # sys.exit()
-
-            except StagingError as e:
+            except RuntimeError as e:
                 print(f"[REJECTED] candle: {candle}: {e}")
 
 # --------------------------------------------------
 # Entrypoint
 # --------------------------------------------------
 
-if __name__ == "__main__":
+def main():
     load_staging_historical()
+
+if __name__ == "__main__":
+    main()

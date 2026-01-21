@@ -2,9 +2,9 @@
 -- Stock ETL - Curated Schema
 -- =========================================================
 
--- -----------------------
+-- =========================================================
 -- Create Schema
--- -----------------------
+-- =========================================================
 
 CREATE SCHEMA IF NOT EXISTS curated;
 
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS curated.dim_trade_date (
 -- =========================================================
 
 CREATE TABLE IF NOT EXISTS curated.fact_stock_prices (
-    stock_price_sk        BIGSERIAL PRIMARY KEY,
+    stock_price_sk  BIGSERIAL PRIMARY KEY,
     symbol_sk       BIGINT NOT NULL REFERENCES curated.dim_stock_meta(stock_meta_sk),
     trade_date_sk   BIGINT NOT NULL REFERENCES curated.dim_trade_date(date_sk),
     open            NUMERIC(12,4) NOT NULL,

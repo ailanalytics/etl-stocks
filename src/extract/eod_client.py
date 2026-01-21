@@ -18,6 +18,7 @@ load_dotenv()
 # -------------------------------------
 
 api_key = os.getenv("EOD_APIKEY")
+
 if not api_key:
     raise ConfigError("API key not set in environment")
 
@@ -29,6 +30,15 @@ eod_url = "https://eodhd.com/api/eod-bulk-last-day/US"
 
 def fetch_incremental(symbols: list[str]) -> list[dict]:
 
+    """
+    Fetch incremental EOD data from EODHD
+    
+    :param symbols: List of symbols retrieved from config
+    :type symbols: list[str]
+    :return: EODHD Bulk json
+    :rtype: list[dict]
+    """
+
     joined_symbols = ",".join(symbols)
 
     params = {
@@ -38,9 +48,10 @@ def fetch_incremental(symbols: list[str]) -> list[dict]:
     }
 
     try:
-        response = requests.get(eod_url, params=params, timeout=15)
+        response = requests.get(eod_url, params=params, timeout=30)
         response.raise_for_status()
         data = response.json()
+
     except requests.exceptions.RequestException as e:
         raise APIError(f"HTTP error fetching bulk data: {e}") from e
     except ValueError as e:
@@ -57,7 +68,17 @@ def fetch_incremental(symbols: list[str]) -> list[dict]:
 
 def fetch_historical(symbol: str) -> list[dict]:
 
+    """
+    Fetch historical EOD data from EODHD
+    
+    :param symbol: Individual symbol for EOD data
+    :type symbol: str
+    :return: Historical EOD data for symbol
+    :rtype: list[dict]
+    """
+
     url = f"https://eodhd.com/api/eod/{symbol}.US"
+
     params = {
         "api_token": api_key,
         "fmt": "json"
@@ -70,13 +91,11 @@ def fetch_historical(symbol: str) -> list[dict]:
 
     except requests.exceptions.RequestException as e:
         raise APIError(f"HTTP error for {symbol}: {e}") from e
-    
     except ValueError as e:
         raise APIError(f"Invalid json returned for {symbol}") from e
-    
+
     if not isinstance(data, list):
         raise ValidationError(f"Unexpected payload structure for {symbol}")
-    
     if not data:
         raise ValidationError(f"No data returned for {symbol}")
     

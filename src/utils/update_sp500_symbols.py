@@ -9,7 +9,9 @@ import requests
 from pathlib import Path
 from datetime import datetime
 
-# Wikipedia url
+# --------------------------------------------------
+# Wiki URL
+# --------------------------------------------------
 
 URL = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 
@@ -21,6 +23,10 @@ HEADERS = {
     )
 }
 
+# --------------------------------------------------
+# Fetch latest sp500 symbols
+# --------------------------------------------------
+
 def fetch_sp500() -> list[str]:
     """
     Scrapes Wikipedia's S&P 500 constituent table and returns
@@ -30,18 +36,19 @@ def fetch_sp500() -> list[str]:
     response = requests.get(URL, headers=HEADERS, timeout=30)
     response.raise_for_status()
 
-    # Read all tables on the page
     tables = pd.read_html(response.text)
-    # The first table on the page contains the S&P 500 list
     df = tables[0]
 
-    # "Symbol" column contains the tickers
     symbols = (
         df["Symbol"]
         .str.replace(".", "-", regex=False)
         .tolist()
     )
     return symbols
+
+# --------------------------------------------------
+# Saves latest version to local
+# --------------------------------------------------
 
 def save_version(symbols: list[str], config_dir: Path):
     """
@@ -54,7 +61,6 @@ def save_version(symbols: list[str], config_dir: Path):
     versioned_name = f"{date_retrieved}.json"
     versioned_path = config_dir / versioned_name
 
-    # Write versioned
     with versioned_path.open("w", encoding="utf-8") as f:
         json.dump({
             "domain": "sp500_current",
@@ -62,7 +68,6 @@ def save_version(symbols: list[str], config_dir: Path):
             "symbols": symbols
         }, f, indent=2)
 
-    # Update the "latest.json"
     latest_path = config_dir / "latest.json"
     with latest_path.open("w", encoding="utf-8") as f:
         json.dump({
@@ -72,6 +77,10 @@ def save_version(symbols: list[str], config_dir: Path):
         }, f, indent=2)
 
     print(f"[ok] saved {versioned_path} and updated latest.json")
+
+# --------------------------------------------------
+# Entry Point
+# --------------------------------------------------
 
 def main():
     config_dir = Path("config/domains/sp500_current")

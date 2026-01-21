@@ -34,6 +34,18 @@ required_data = [
 # --------------------------------------------------
 
 def validate_historical_data(payload: dict, data: dict) -> dict:
+
+    """
+    Validates historical payload and data
+    Enforces Types
+    
+    :param payload: Payload meta to validate
+    :type payload: dict
+    :param data: EOD data
+    :type data: dict
+    :return: Validated data
+    :rtype: dict
+    """
     
     for field in required_fields:
         if field not in payload:

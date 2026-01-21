@@ -2,9 +2,9 @@
 -- Stock ETL - Staging Schema
 -- =========================================================
 
--- -----------------------
+-- =========================================================
 -- Staging Table - Stock Meta
--- -----------------------
+-- =========================================================
 
 CREATE TABLE IF NOT EXISTS staging.stocks_meta (
     symbol          TEXT NOT NULL,
@@ -18,5 +18,4 @@ CREATE TABLE IF NOT EXISTS staging.stocks_meta (
 
     CONSTRAINT staging_stocks_meta_symbol_cik
         UNIQUE (symbol, cik)
-
 );

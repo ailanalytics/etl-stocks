@@ -3,7 +3,6 @@ Extract and load EOD incremental from s3 raw to staging
 """
 
 import json
-import sys
 from datetime import datetime, timedelta, timezone
 from src.utils.s3config import s3_bucket, client
 from src.load_staging.contract_incremental import validate_incremental_data
@@ -15,7 +14,6 @@ from src.utils.custom_exceptions import *
 # --------------------------------------------------
 
 INSERT = """
-
 INSERT INTO staging.stocks (
     symbol,
     domain,
@@ -44,7 +42,6 @@ INSERT INTO staging.stocks (
     %(volume)s
 )
 ON CONFLICT (symbol, trade_date) DO NOTHING;
-
 """
 
 # --------------------------------------------------
@@ -52,6 +49,10 @@ ON CONFLICT (symbol, trade_date) DO NOTHING;
 # --------------------------------------------------
 
 def load_staging_incremental():
+
+    """
+    Loads incremental EOD data into db
+    """
 
     eod_date = datetime.now(timezone.utc).date() - timedelta(days=1)
 
@@ -78,8 +79,6 @@ def load_staging_incremental():
 
             print(f"[INSERTED] candle for: {candle["code"]}")
 
-            # sys.exit()
-
         except SQLError as e:
             print(f"[REJECTED] candle: {candle}: {e}")
 
@@ -87,5 +86,8 @@ def load_staging_incremental():
 # Entrypoint
 # --------------------------------------------------
 
-if __name__ == "__main__":
+def main():
     load_staging_incremental()
+
+if __name__ == "__main__":
+    main()

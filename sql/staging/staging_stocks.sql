@@ -2,15 +2,15 @@
 -- Stock ETL - Staging Schema
 -- =========================================================
 
--- -----------------------
+-- =========================================================
 --  Create Schema
--- -----------------------
+-- =========================================================
 
 CREATE SCHEMA IF NOT EXISTS staging;
 
--- -----------------------
+-- =========================================================
 -- Staging Table - Price
--- -----------------------
+-- =========================================================
 
 CREATE TABLE IF NOT EXISTS staging.stocks (
     symbol          TEXT NOT NULL,
@@ -28,5 +28,4 @@ CREATE TABLE IF NOT EXISTS staging.stocks (
 
     CONSTRAINT staging_stocks_symbol_trade_date_uk
         UNIQUE (symbol, trade_date)
-
 );

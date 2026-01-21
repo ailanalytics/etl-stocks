@@ -51,7 +51,8 @@ def fetch_all(query, params=None):
             return cur.fetchall()
         
 # --------------------------------------------------
-# Execute query INSERT/UPDATE/DELETE and return rowcount
+# Execute query INSERT/UPDATE/DELETE 
+# and return rowcount
 # --------------------------------------------------
 
 def execute_with_rowcount(query, params=None):

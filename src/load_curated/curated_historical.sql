@@ -51,7 +51,8 @@ ON CONFLICT (date) DO NOTHING;
 -- =========================================================
 -- Fact Stock Price
 -- =========================================================
--- EXPLAIN
+-- EXPLAIN - Testing efficiency of query
+
 INSERT INTO curated.fact_stock_prices (
     symbol_sk,
     trade_date_sk,

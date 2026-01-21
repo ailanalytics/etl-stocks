@@ -12,7 +12,9 @@ from src.utils.custom_exceptions import *
 from src.utils.s3config import s3_bucket, client
 from botocore.exceptions import ClientError, NoCredentialsError, EndpointConnectionError
 
-# Wiki url
+# --------------------------------------------------
+# Wiki URL
+# --------------------------------------------------
 
 URL = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 
@@ -23,6 +25,10 @@ HEADERS = {
         "Chrome/120.0.0.0 Safari/537.36"
     )
 }
+
+# --------------------------------------------------
+# Fetch Metadata For Symbols
+# --------------------------------------------------
 
 def fetch_symbol_meta() -> list[dict]:
 
@@ -40,14 +46,11 @@ def fetch_symbol_meta() -> list[dict]:
     except requests.exceptions.RequestException as e:
         raise APIError(f"HTTP error fetching stock details: {e}") from e
 
-
-    # Read all tables on the page
     tables = pd.read_html(response.text)
-    # The first table on the page contains the S&P 500 list
+
     df = tables[0]
 
     for row in df.itertuples(index=False):
-
         try:
             symbol_name = str(row[0]).replace(".", "-") #API needs - not .
             symbol_meta = {
@@ -63,12 +66,24 @@ def fetch_symbol_meta() -> list[dict]:
             print(f"[ERROR] Unable to parse symbol data for: {symbol_name} : {e}")
             continue
 
-
         symbol_meta_list.append(symbol_meta)
 
     return symbol_meta_list
 
+# --------------------------------------------------
+# Construct Payload Metadata
+# --------------------------------------------------
+
 def payload_meta(data: list[dict]) -> dict:
+
+    """
+    Constructs payload 
+    
+    :param data: List of symbols
+    :type data: list[dict]
+    :return: Constructed symbol list with meta
+    :rtype: dict
+    """
 
     payload = {
         "domain": "sp500",
@@ -79,7 +94,15 @@ def payload_meta(data: list[dict]) -> dict:
 
     return payload
 
+# --------------------------------------------------
+# Write Stock Symbol List to S3
+# --------------------------------------------------
+
 def write_symbol_data_to_s3():
+
+    """
+    Write Stock Symbol List to S3
+    """
 
     symbol_list = fetch_symbol_meta()
     payload = payload_meta(data=symbol_list)
@@ -97,14 +120,15 @@ def write_symbol_data_to_s3():
 
     except NoCredentialsError as exc:
         raise RuntimeError("AWS credentials not configured") from exc
-    
     except EndpointConnectionError as exc:
         raise RuntimeError("Unable to reach S3") from exc
-    
     except ClientError as exc:
         error_code = exc.response["Error"]["Code"]
         raise RuntimeError(f"S3 put_object failed ({error_code}) for {s3_bucket}/{key}") from exc
 
+# --------------------------------------------------
+# Entry Point
+# --------------------------------------------------
 
 def main():
     write_symbol_data_to_s3()

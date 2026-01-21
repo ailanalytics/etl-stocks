@@ -34,6 +34,17 @@ required_data = [
 # --------------------------------------------------
 
 def validate_incremental_data(payload: dict, data: dict) -> dict:
+
+    """
+    Validation of payload meta and EOD data
+    
+    :param payload: Payload meta
+    :type payload: dict
+    :param data: EOD Data
+    :type data: dict
+    :return: Validated payload
+    :rtype: dict
+    """
     
     for field in required_fields:
         if field not in payload:

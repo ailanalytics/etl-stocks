@@ -8,17 +8,23 @@ from src.extract import eod_client
 from src.utils import s3config as s3
 from src.utils import get_sp500_tickers as get_ticker
 
-# -------------------------------------
+# --------------------------------------------------
 # Write incremental data to S3
-# -------------------------------------
+# --------------------------------------------------
 
-def write_incremental(
-        
-    api_response: list[dict],
-    domain: str = "sp500",
-    source: str = "https://eodhd.com/api/eod-bulk-last-day/US"
-    ):
+def write_incremental(api_response: list[dict], domain: str = "sp500", source: str = "https://eodhd.com/api/eod-bulk-last-day/US"):
 
+    """
+    Write incremental EOD data to S3
+    
+    :param api_response: EODHD json
+    :type api_response: list[dict]
+    :param domain: sp500
+    :type domain: str
+    :param source: EOD API URL
+    :type source: str
+    """
+    
     eod_date = datetime.now(timezone.utc).date() - timedelta(days=1)
 
     key = (
@@ -50,24 +56,31 @@ def write_incremental(
 
     print(f"[OK] {len(api_response)} records written to s3://{s3.s3_bucket}/{key}")
 
-# -------------------------------------
+# --------------------------------------------------
 # Orchestration
-# -------------------------------------
+# --------------------------------------------------
 
 def get_incremental_data():
+
+    """
+    Load symbols and pass to fetch_incremental
+    Symbol list is interted into API call
+    """
     
     symbols = get_ticker.get_symbols()
 
     data = eod_client.fetch_incremental(symbols)
+
     write_incremental(data)
 
-# -------------------------------------
-# Entry point
-# -------------------------------------
+# --------------------------------------------------
+# Entry Point
+# --------------------------------------------------
 
 def main():
     weekday = datetime.now(timezone.utc).weekday()
     # Monday=0, Sunday=6
+    
     if weekday in (0, 6):
         print("[SKIP] Market closed (Sunday/Monday)")
         return

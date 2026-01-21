@@ -1,6 +1,5 @@
 """
 Connect to EODHD API and retrieve historical data
-
 """
 
 import os
@@ -9,48 +8,46 @@ import json
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import timezone, datetime
+from src.utils.custom_exceptions import *
 
-# -------------------------------------
-# Custom Exceptions
-# -------------------------------------
-
-class ConfigError(Exception):
-    pass
-
-class APIError(Exception):
-    pass
-
-class ValidationError(Exception):
-    pass
-
-#-------------------------------------
+# --------------------------------------------------
 # Load environment variables
-#-------------------------------------
+# --------------------------------------------------
 
 load_dotenv()
 
-#-------------------------------------
-#API Details
-#-------------------------------------
+# --------------------------------------------------
+# API Details
+# --------------------------------------------------
 
 api_key = os.getenv("EOD_APIKEY")
 if not api_key:
     raise ConfigError("API key not set in environment")
 
-#-------------------------------------
-#Paths
-#-------------------------------------
+# --------------------------------------------------
+# Paths
+# --------------------------------------------------
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_LAKE = PROJECT_ROOT / "data_lake"
 
-# -------------------------------------
+# --------------------------------------------------
 # Fetch historical data
-# -------------------------------------
+# --------------------------------------------------
 
 def fetch_historical(symbol: str) -> list[dict]:
 
+    """
+    Fetch historical EOD Data from EODHD
+    
+    :param symbol: Symbol to query
+    :type symbol: str
+    :return: EOD json for symbol
+    :rtype: list[dict]
+    """
+
     url = f"https://eodhd.com/api/eod/{symbol}.US"
+
     params = {
         "api_token": api_key,
         "fmt": "json"
@@ -63,23 +60,24 @@ def fetch_historical(symbol: str) -> list[dict]:
 
     except requests.exceptions.RequestException as e:
         raise APIError(f"HTTP error for {symbol}: {e}") from e
-    
     except ValueError as e:
         raise APIError(f"Invalid json returned for {symbol}") from e
     
     if not isinstance(data, list):
         raise ValidationError(f"Unexpected payload structure for {symbol}")
-    
     if not data:
         raise ValidationError(f"No data returned for {symbol}")
     
     return data
 
+# --------------------------------------------------
+# Write historical data
+# --------------------------------------------------
 
 def write_historical(symbol: str, api_response: list[dict], base_path: Path, domain:str="sp500", source: str="https://eodhd.com/api/eod/"):
 
     """
-    Docstring for write_historical
+    Write historical json data to local storage
     
     :param symbol: selected stock symbol
     :type symbol: str
@@ -116,7 +114,16 @@ def write_historical(symbol: str, api_response: list[dict], base_path: Path, dom
 
     print(f"historical data written to {output_file} for {symbol}")
 
+# --------------------------------------------------
+# Load symbols and extract/load historical data
+# --------------------------------------------------
+
 def get_historical_data():
+
+    """
+    Load symbols and fetch historical data
+    for each symbol
+    """
 
     config_path = (PROJECT_ROOT / "config" / "domains" / "sp500_current" / "latest.json")
 
@@ -128,7 +135,6 @@ def get_historical_data():
     except Exception as e:
         raise ConfigError(f"Failed to load symbol config: {e}") from e
 
-
     for symbol in symbol_list:
 
         try: 
@@ -138,10 +144,13 @@ def get_historical_data():
         except (APIError, ValidationError) as e:
             print(f"[WARN] {symbol} skipped: {e}")
             continue
-
         except Exception as e:
             print(f"[ERROR] Unexpected failure for {symbol}: {e}")
             continue
+
+# --------------------------------------------------
+# Entry point
+# --------------------------------------------------
 
 def main():
     get_historical_data()

@@ -28,6 +28,17 @@ required_data = [
 # --------------------------------------------------
 
 def validate_symbol_metadata(payload: dict, data: dict) -> dict:
+
+    """
+    Validates individual stock meta data
+    
+    :param payload: Payload meta
+    :type payload: dict
+    :param data: Stock meta
+    :type data: dict
+    :return: Validated payload
+    :rtype: dict
+    """
     
     for field in required_fields:
         if field not in payload:

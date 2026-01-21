@@ -13,7 +13,6 @@ from src.utils.custom_exceptions import *
 # --------------------------------------------------
 
 INSERT = """
-
 INSERT INTO staging.stocks_meta (
     symbol,
     name,
@@ -34,7 +33,6 @@ INSERT INTO staging.stocks_meta (
     %(ingested_at)s
 )
 ON CONFLICT (symbol, cik) DO NOTHING;
-
 """
 
 # --------------------------------------------------
@@ -42,6 +40,10 @@ ON CONFLICT (symbol, cik) DO NOTHING;
 # --------------------------------------------------
 
 def load_stock_meta():
+
+    """
+    Loads stock meta into staging table
+    """
 
     key = (f"raw/stocks/stock_lists/domain=sp500/stock_list_2026-01-17.json")
 
@@ -59,13 +61,12 @@ def load_stock_meta():
     meta = {k: v for k, v in payload.items() if k != "data"}
 
     for stock in data:
-
         try:
             grain = validate_symbol_metadata(meta, stock)
 
             execute(INSERT, grain)
 
-        except StagingError as e:
+        except RuntimeError as e:
             print(f"[REJECTED] stock: {stock["symbol"]}: {e}")
 
     print(f"[OK] Stocks inserted into staging.stocks_meta")
@@ -74,5 +75,8 @@ def load_stock_meta():
 # Entrypoint
 # --------------------------------------------------
 
-if __name__ == "__main__":
+def main():
     load_stock_meta()
+
+if __name__ == "__main__":
+    main()
