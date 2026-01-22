@@ -9,6 +9,27 @@ from src.utils.custom_exceptions import *
 # SQL
 # --------------------------------------------------
 
+INSERT_DATES = """
+INSERT INTO curated.dim_trade_date (
+    date,
+    day,
+    month,
+    year,
+    day_of_week
+)
+
+SELECT DISTINCT 
+    td.trade_date,
+    EXTRACT(day FROM td.trade_date),
+    EXTRACT(month FROM td.trade_date),
+    EXTRACT(year FROM td.trade_date),
+    EXTRACT(ISODOW FROM td.trade_date)::INT
+
+FROM staging.stocks td
+ON CONFLICT (date) DO NOTHING;
+
+"""
+
 INSERT = """
 INSERT INTO curated.fact_stock_prices (
     symbol_sk,
@@ -54,15 +75,19 @@ RETURNING 1;
 def load_curated_incremental():
 
     """
-    Execute SQL to extract incrimental data from staging
+    Execute SQL to extract incremental data from staging
     and load into curated
     """
 
     try:
 
-        rows = execute_with_rowcount(INSERT)
+        dates = execute_with_rowcount(INSERT_DATES)
 
-        print(f"[INSERTED] {rows} into curated inremental data")
+        data = execute_with_rowcount(INSERT)
+
+        print(f"[INSERTED] {dates} into curated dim dates incremental data")
+
+        print(f"[INSERTED] {data} into curated fact stock price incremental data")
 
     except SQLError as e:
 
