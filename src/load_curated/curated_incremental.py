@@ -1,5 +1,5 @@
 """
-Extract and load incrimental data from staging into curated
+Extract and load incremental data from staging into curated
 """
 
 from src.utils.db import *
@@ -27,7 +27,6 @@ SELECT DISTINCT
 
 FROM staging.stocks td
 ON CONFLICT (date) DO NOTHING;
-
 """
 
 INSERT = """
