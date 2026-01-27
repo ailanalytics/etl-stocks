@@ -12,12 +12,13 @@ WITH priced AS (
         td.date,
         td.date_sk,
 
-        LAG(sp.close, 30)  OVER w AS close_30d,
-        LAG(sp.close, 60)  OVER w AS close_60d,
-        LAG(sp.close, 90)  OVER w AS close_90d,
-        LAG(sp.close, 252) OVER w AS close_12m,
+        LAG(sp.close, 30)  OVER w AS close_30,
+        LAG(sp.close, 60)  OVER w AS close_60,
+        LAG(sp.close, 90)  OVER w AS close_90,
+        LAG(sp.close, 180) OVER w AS close_180,
 
         ROW_NUMBER() OVER w_desc AS rn
+
     FROM curated.fact_stock_prices sp
     JOIN curated.dim_stock_meta sm
         ON sp.symbol_sk = sm.stock_meta_sk
@@ -41,10 +42,10 @@ INSERT INTO mart.stock_perf_current (
     sector,
     industry,
     latest_close,
-    perf_30d,
-    perf_60d,
-    perf_90d,
-    perf_12m,
+    perf_30td,
+    perf_60td,
+    perf_90td,
+    perf_180td,
     as_of_date
 )
 SELECT
@@ -53,12 +54,12 @@ SELECT
     sector,
     sub_industry,
     close AS latest_close,
-    (close / close_30d) - 1 AS perf_30d,
-    (close / close_60d) - 1 AS perf_60d,
-    (close / close_90d) - 1 AS perf_90d,
-    (close / close_12m) - 1 AS perf_12m,
+    (close / close_30) - 1 AS perf_30td,
+    (close / close_60) - 1 AS perf_60td,
+    (close / close_90) - 1 AS perf_90td,
+    (close / close_180) - 1 AS perf_180td,
     date
 
 FROM priced
 WHERE rn = 1
-  AND close_30d IS NOT NULL;
+  AND close_30 IS NOT NULL;
