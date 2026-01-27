@@ -32,9 +32,11 @@ Staging Layer (PostgreSQL)
    │
    ▼
 Curated / Analytics Layer (PostgreSQL, Star Schema)
-```
+   │
+   ▼
+Mart / Performance (PostgreSQL)
 
----
+```
 
 ## Raw Layer
 
@@ -74,7 +76,7 @@ CREATE TABLE IF NOT EXISTS staging.stocks (
 );
 ```
 
-### Design Rationale
+### Design Principles
 
 - Natural business key: `(symbol, trade_date)`
 - Prevents duplicate candles by construction
@@ -155,6 +157,33 @@ The curated layer transforms validated staging data into **analytics-ready star-
 
 ---
 
+## Mart Layer
+
+Example mart layer analysing individual stock percentage performance over 30/60/90/180 trading day periods.
+
+### Design Principles
+
+- Clear grain definitions
+- Selectively denormalised attributes to improve analytics and BI performance
+- Replayable and rebuildable from upstream curated data 
+
+### Performance Calculations
+
+All lagged price metrics and return calculations are based on **trading-day offsets**, not calendar days.
+
+The underlying price fact table contains **trading days only** (weekends and market holidays are excluded).  
+As a result, window functions such as `LAG(close, N)` represent **N trading days prior**, not N calendar days.
+
+Example offsets used:
+- 30 trading days  (~1.4 calendar months)
+- 60 trading days  (~3 calendar months)
+- 90 trading days  (~4–4.5 calendar months)
+- 180 trading days (~8–9 calendar months)
+
+This approach is intentional and aligns with common equity-market analytics practice.
+
+---
+
 ## Operational Characteristics
 
 - Cron-driven ingestion and transformation jobs
@@ -181,14 +210,12 @@ The curated layer transforms validated staging data into **analytics-ready star-
 - ✔ Staging layer complete  
 - ✔ Curated star schema implemented  
 - ✔ ~4.5M validated rows loaded  
+- ✔ Example mart layer
 
 ---
 
 ## Planned Next Steps
 
-- Analytical marts for specific business questions  
-  - e.g. *Top 5 performing stocks per industry*  
-- Index optimisation for analytical workloads  
 - Power BI dashboards and exploratory analytics  
 - Additional data quality checks and metrics  
 
